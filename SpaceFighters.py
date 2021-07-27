@@ -3,7 +3,7 @@ from pygame.constants import K_RCTRL
 import pygame
 import os
 pygame.font.init()
-
+pygame.mixer.init()
 
 width, height = 1000, 700
 wid, hei = 55, 40
@@ -39,6 +39,13 @@ yellow_spaceship = pygame.transform.rotate(
     pygame.transform.scale(yellow_spaceship_image, (wid, hei)), (270))
 space = pygame.transform.scale(pygame.image.load(
     os.path.join('Assets', 'space.png')), (width, height))
+
+hit_sound = pygame.mixer.Sound(os.path.join('Assets', 'classic_hurt.wav'))
+pygame.mixer.music.load(os.path.join('Assets', 'modular-ambient-04-792.wav'))
+pygame.mixer.music.play(1)
+fire_sound = pygame.mixer.Sound(os.path.join('Assets', 'gun-gunshot-01.wav'))
+winning_sound = pygame.mixer.Sound(os.path.join(
+    'Assets', 'Ta Da-SoundBible.com-1884170640.wav'))
 
 
 def window(red, yellow, red_bullets, yellow_bullets, red_health, yellow_health):
@@ -102,6 +109,7 @@ def Win(winner):
     draw_winner = win_font.render(winner, 1, white)
     win.blit(draw_winner, (500 - draw_winner.get_width() /
              2, 350-draw_winner.get_height()/2))
+    winning_sound.play()
     pygame.display.update()
     pygame.time.delay(2000)
 
@@ -121,21 +129,30 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    pygame.mixer.music.fadeout(1000)
+                elif event.key == pygame.K_RALT:
+                    pygame.mixer.music.play(1)
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LCTRL and len(red_bullets) < max_bullets:
                     red_bullet = pygame.Rect(
                         red.x + red.width, red.y + red.height//2 - 2, 10, 5)
                     red_bullets.append(red_bullet)
+                    fire_sound.play()
 
                 if event.key == pygame.K_RCTRL and len(yellow_bullets) < max_bullets:
                     yellow_bullet = pygame.Rect(
                         yellow.x, yellow.y + yellow.height//2 - 2, 10, 5)
                     yellow_bullets.append(yellow_bullet)
+                    fire_sound.play()
 
             if event.type == yellow_hit:
                 yellow_health -= 1
+                hit_sound.play()
 
             if event.type == red_hit:
                 red_health -= 1
+                hit_sound.play()
 
         winner = ""
         if yellow_health <= 0:
